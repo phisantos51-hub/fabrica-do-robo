@@ -39,7 +39,7 @@
     const n = d.discos;
     const nomes = nomesDiscos(n);
     const minimo = Math.pow(2, n) - 1;
-    let pinos, levantado, movimentos, c;
+    let pinos, levantado, movimentos, c, terminado = false;
 
     function reiniciar() {
       pinos = [[], [], []];
@@ -126,6 +126,7 @@
     }
 
     function tocarPino(i) {
+      if (terminado) return;
       if (levantado === null) {
         if (!pinos[i].length) {
           avisar(c, "O " + NOME_PINO[PINOS[i]] + " está vazio. Escolha um pino que tenha disco.", "neutra");
@@ -159,6 +160,7 @@
       const fim = pinos[d.para].length === n;
       Voz.sequencia([{ som: "disco", arg: nomeDisco(s), pausa: 300 },
         { texto: "Disco " + nomeDisco(s) + " no " + NOME_PINO[PINOS[i]] + ". Movimentos: " + movimentos + "." }]);
+      if (fim) terminado = true;
       if (fim) setTimeout(terminar, Config.get("modoAudio") ? 1800 : 500);
     }
 

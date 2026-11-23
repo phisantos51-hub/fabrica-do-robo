@@ -175,7 +175,7 @@ const Voz = (function () {
       for (const p of passos) {
         if (id !== fila) return;
         if (p.som) {
-          Sons.tocar(p.som, p.arg);
+          if (p.som !== "nada") Sons.tocar(p.som, p.arg);
           if (typeof p.aoTocar === "function") p.aoTocar();
           await esperar(p.pausa !== undefined ? p.pausa : Sons.duracao(p.som) + 120);
         }
