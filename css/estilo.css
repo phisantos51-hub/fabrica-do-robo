@@ -1,0 +1,423 @@
+/* =========================================================================
+   FÁBRICA DO ROBÔ – visual
+   Cores com bom contraste. Modo Calmo, Alto contraste e Letras grandes
+   são classes no <body> (ver nucleo.js).
+   ========================================================================= */
+:root {
+  --fundo: #fff8e7;
+  --painel: #ffffff;
+  --texto: #1f2937;
+  --texto-suave: #4b5563;
+  --borda: #cbd5e1;
+  --primaria: #1d4ed8;
+  --primaria-texto: #ffffff;
+  --primaria-clara: #dbeafe;
+  --destaque: #f59e0b;
+  --barra: #1e3a8a;
+  --barra-texto: #ffffff;
+  --dica-fundo: #fef3c7;
+  --dica-borda: #b45309;
+  --certo-fundo: #dcfce7;
+  --certo-borda: #15803d;
+  --foco: #111827;
+  --foco-anel: #f59e0b;
+  --estrela: #d97706;
+  --sombra: 0 5px 0 rgba(0, 0, 0, 0.15);
+  --raio: 20px;
+  --base: 1.2rem;
+
+  /* Robô Campeão */
+  --cc-ouro: #f6c344; --cc-metal: #94a3b8; --cc-bota: #ef4444; --cc-capa: #7c3aed;
+  --cc-tela: #1e293b; --cc-estrela: #facc15;
+}
+
+/* Modo Calmo: cores suaves, menos enfeites, sem animações rápidas */
+body.calmo {
+  --fundo: #f4f6f4;
+  --primaria: #3f6f8f;
+  --primaria-clara: #e3edf2;
+  --barra: #4a6572;
+  --destaque: #8fb3c4;
+  --dica-fundo: #eef2f5;
+  --dica-borda: #6b8597;
+  --certo-fundo: #e8f1ea;
+  --certo-borda: #5f8a6b;
+  --estrela: #8a7a4a;
+  --sombra: none;
+  --cc-ouro: #e6d3a3; --cc-metal: #b8c2cc; --cc-bota: #c9a9a6; --cc-capa: #b6a9cf; --cc-estrela: #ead9a0;
+}
+
+/* Alto contraste */
+body.contraste {
+  --fundo: #000000;
+  --painel: #000000;
+  --texto: #ffffff;
+  --texto-suave: #ffffff;
+  --borda: #ffffff;
+  --primaria: #ffff00;
+  --primaria-texto: #000000;
+  --primaria-clara: #1a1a1a;
+  --barra: #000000;
+  --barra-texto: #ffff00;
+  --dica-fundo: #000000;
+  --dica-borda: #ffff00;
+  --certo-fundo: #000000;
+  --certo-borda: #00ff66;
+  --foco: #ffffff;
+  --foco-anel: #00e5ff;
+  --estrela: #ffff00;
+}
+
+body.letras-grandes { --base: 1.5rem; }
+
+* { box-sizing: border-box; }
+html { font-size: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: "Andika", "Comic Sans MS", "Trebuchet MS", Verdana, Arial, sans-serif;
+  font-size: var(--base);
+  line-height: 1.4;
+}
+.so-leitor {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+[hidden] { display: none !important; }
+
+/* Foco sempre bem visível (teclado) */
+:focus { outline: none; }
+:focus-visible, .modo-audio :focus {
+  outline: 5px solid var(--foco-anel);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 9px var(--foco);
+}
+#titulo:focus, #tela:focus { outline: none; box-shadow: none; }
+
+.icone { width: 1.6em; height: 1.6em; flex: none; }
+
+/* ---------- Barra do topo (igual em todas as telas) ---------- */
+.barra {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  padding: 0.5rem 1rem;
+  background: var(--barra); color: var(--barra-texto);
+}
+body.contraste .barra { border-bottom: 3px solid #ffff00; }
+.marca-jogo { display: flex; align-items: center; gap: 0.4rem; margin: 0; font-weight: bold; font-size: 1.15em; }
+.engrenagem { width: 1.8em; height: 1.8em; fill: #fbbf24; }
+body.calmo .engrenagem { fill: #d6c48f; }
+.botoes-barra { display: flex; gap: 0.5rem; margin-left: auto; flex-wrap: wrap; }
+.botao-barra {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  min-height: 3rem; padding: 0.4rem 0.9rem;
+  font: inherit; font-size: 0.95em; font-weight: bold;
+  color: var(--texto); background: #ffffff;
+  border: 3px solid #ffffff; border-radius: 999px; cursor: pointer;
+}
+body.contraste .botao-barra { background: #000; color: #ffff00; border-color: #ffff00; }
+.botao-barra:hover { background: var(--primaria-clara); }
+.botao-barra[disabled] { opacity: 0.85; cursor: default; }
+.botao-pausa { background: #fde68a; border-color: #fde68a; }
+body.calmo .botao-pausa { background: #e7e1c8; border-color: #e7e1c8; }
+
+.progresso { display: flex; align-items: center; gap: 0.6rem; flex: 1 1 12rem; max-width: 22rem; }
+.barra-fundo { flex: 1; height: 1rem; background: rgba(255, 255, 255, 0.3); border-radius: 999px; overflow: hidden; border: 2px solid #fff; }
+.barra-cheia { height: 100%; width: 0; background: #fbbf24; transition: width 0.4s; }
+body.calmo .barra-cheia { background: #d6c48f; }
+body.contraste .barra-cheia { background: #ffff00; }
+.progresso-texto { font-size: 0.9em; white-space: nowrap; }
+
+/* ---------- Área principal ---------- */
+main {
+  flex: 1; width: 100%; max-width: 1180px; margin: 0 auto;
+  padding: 0.8rem 1rem 1.5rem;
+}
+h1 { margin: 0.3rem 0 0.6rem; font-size: 1.8em; color: var(--primaria); line-height: 1.15; }
+body.contraste h1 { color: #ffff00; }
+h2 { font-size: 1.25em; margin: 0.4rem 0 0.5rem; }
+h3 { font-size: 1.1em; margin: 0.2rem 0 0.5rem; }
+
+/* Botões grandes, para mouse e toque (sem clique duplo, sem precisão fina) */
+.botao {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 3.4rem; padding: 0.5rem 1.2rem;
+  font: inherit; font-weight: bold;
+  color: var(--texto); background: var(--painel);
+  border: 4px solid var(--primaria); border-radius: 999px;
+  box-shadow: var(--sombra); cursor: pointer;
+}
+.botao:hover { background: var(--primaria-clara); }
+.botao.principal { background: var(--primaria); color: var(--primaria-texto); }
+.botao.principal:hover { filter: brightness(1.1); }
+.botao.perigo { border-color: #b91c1c; }
+body.contraste .botao.perigo { border-color: #ff6666; }
+.botao:active { transform: translateY(2px); }
+
+/* Botões que só aparecem com o som ligado */
+.so-com-som { display: none !important; }
+body.com-som .so-com-som { display: inline-flex !important; }
+
+/* ---------- Passos numerados (Modo Calmo) ---------- */
+.passos { list-style: none; counter-reset: passo; display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 0; margin: 0 0 0.8rem; }
+.passos li {
+  counter-increment: passo; display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.9rem; background: var(--painel); border: 3px solid var(--borda); border-radius: 14px;
+}
+.passos li::before {
+  content: counter(passo); display: inline-grid; place-items: center;
+  width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--primaria); color: var(--primaria-texto); font-weight: bold;
+}
+.passos-grandes { flex-direction: column; }
+.passos-grandes li { padding: 0.6rem 1rem; font-size: 1.05em; }
+.passos-grandes .icone { width: 3rem; height: 3rem; }
+.passo-desenho { display: inline-block; width: 3.4rem; height: 4.4rem; flex: none; }
+.passo-desenho svg { width: 100%; height: 100%; }
+.riscado-exemplo { position: relative; }
+.riscado-exemplo::after { content: "✕"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 3rem; color: var(--texto); }
+
+/* ---------- Tela inicial ---------- */
+.faixa-audio { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem; }
+.botao-audio {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  min-height: 4rem; padding: 0.6rem 1.4rem;
+  font: inherit; font-size: 1.25em; font-weight: bold;
+  background: #fde68a; color: #1f2937; border: 5px solid #92400e; border-radius: 999px; box-shadow: var(--sombra); cursor: pointer;
+}
+.botao-audio[aria-pressed="true"] { background: #bbf7d0; border-color: #166534; }
+body.calmo .botao-audio { background: #efe8cf; border-color: #8a7a4a; }
+body.contraste .botao-audio { background: #000; color: #ffff00; border-color: #ffff00; }
+.botao-audio kbd { font: inherit; font-size: 0.8em; padding: 0.1rem 0.5rem; border: 2px solid currentColor; border-radius: 8px; }
+.dica-audio { margin: 0; font-weight: bold; color: var(--texto-suave); }
+
+.bloco { margin: 0.4rem 0 0.8rem; }
+.anos { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.botao-ano {
+  min-width: 9rem; min-height: 4rem; padding: 0.5rem 1.4rem;
+  font: inherit; font-size: 1.25em; font-weight: bold;
+  background: var(--painel); color: var(--texto);
+  border: 4px solid var(--borda); border-radius: var(--raio); box-shadow: var(--sombra); cursor: pointer;
+}
+.botao-ano.ativo { border-color: var(--primaria); background: var(--primaria-clara); }
+.botao-ano.ativo::before { content: "✔ "; }
+.salas { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+.cartao-sala {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  padding: 0.8rem; min-height: 15rem;
+  font: inherit; color: var(--texto); text-align: center;
+  border: 5px solid; border-radius: 26px; box-shadow: var(--sombra); cursor: pointer;
+}
+.sala-montagem { background: #dbeafe; border-color: #1d4ed8; }
+.sala-torre { background: #dcfce7; border-color: #15803d; }
+.sala-padroes { background: #ede9fe; border-color: #6d28d9; }
+body.calmo .cartao-sala { background: #ffffff; border-color: #9fb3c0; }
+body.contraste .cartao-sala { background: #000; border-color: #ffff00; color: #fff; }
+.cartao-sala:hover { filter: brightness(1.05); }
+.sala-desenho { width: 7.5rem; height: 7.5rem; display: grid; place-items: center; background: #fff; border-radius: 18px; }
+.sala-desenho svg { width: 100%; height: 100%; }
+.sala-nome { font-size: 1.3em; font-weight: bold; }
+.sala-frase { color: var(--texto-suave); }
+.sala-estrelas { font-weight: bold; }
+
+.campeao { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 0.6rem 1rem; background: var(--painel); border: 3px solid var(--borda); border-radius: var(--raio); }
+.campeao h2 { width: 100%; margin: 0; }
+.botao-campeao {
+  display: flex; align-items: center; gap: 1rem; padding: 0.4rem 1rem;
+  font: inherit; font-weight: bold; color: var(--texto);
+  background: var(--fundo); border: 3px solid var(--borda); border-radius: var(--raio); cursor: pointer;
+}
+.campeao-svg { width: 7rem; height: 8.5rem; }
+.texto-campeao { flex: 1 1 16rem; margin: 0; }
+.atalhos { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1rem; }
+
+/* Robô Campeão: cores e peças que ainda faltam (contorno tracejado) */
+.cc-ouro { fill: var(--cc-ouro); } .cc-metal { fill: var(--cc-metal); } .cc-bota { fill: var(--cc-bota); }
+.cc-capa { fill: var(--cc-capa); } .cc-tela { fill: var(--cc-tela); } .cc-estrela { fill: var(--cc-estrela); }
+.cc-luz1 { fill: #22c55e; } .cc-luz2 { fill: #facc15; } .cc-luz3 { fill: #38bdf8; }
+.cc-fantasma * { fill: none !important; stroke: #94a3b8 !important; stroke-dasharray: 5 5; stroke-width: 2 !important; }
+.cc-nova { animation: brilho 1.6s ease-in-out 2; }
+@keyframes brilho { 50% { filter: drop-shadow(0 0 6px #f59e0b); } }
+body.calmo .cc-nova { animation: none; }
+
+/* ---------- Lista de fases ---------- */
+.frase-sala { font-size: 1.1em; margin: 0 0 0.8rem; }
+.fases { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.9rem; }
+.botao-fase {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem;
+  min-height: 7rem; padding: 0.6rem;
+  font: inherit; font-weight: bold; color: var(--texto);
+  background: var(--painel); border: 4px solid var(--primaria); border-radius: var(--raio); box-shadow: var(--sombra); cursor: pointer;
+}
+.botao-fase:hover { background: var(--primaria-clara); }
+.botao-fase.trancada { border-style: dashed; border-color: var(--borda); color: var(--texto-suave); cursor: default; box-shadow: none; }
+.fase-num { font-size: 1.3em; }
+.fase-tipo { font-size: 0.85em; color: var(--texto-suave); }
+.estrelas { font-size: 1.5em; letter-spacing: 0.1em; }
+.estrelas .cheia { color: var(--estrela); }
+.estrelas .vazia { color: #94a3b8; }
+.cadeado { font-size: 1.4em; }
+.botao-fase.extra { border-color: var(--destaque); }
+
+/* ---------- Mensagens (dicas) – nunca vermelhas, nunca piscando ---------- */
+.mensagem { min-height: 1.5em; margin: 0.8rem 0 0; padding: 0; font-size: 1.1em; font-weight: bold; }
+.mensagem:empty { display: none; }
+.mensagem.dica, .mensagem.neutra { padding: 0.7rem 1rem; background: var(--dica-fundo); border: 3px solid var(--dica-borda); border-radius: 14px; }
+.mensagem.certo { padding: 0.7rem 1rem; background: var(--certo-fundo); border: 3px solid var(--certo-borda); border-radius: 14px; }
+.mensagem.aparece { animation: aparecer 0.35s ease-out; }
+@keyframes aparecer { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---------- Linha de Montagem ---------- */
+.pedido { padding: 0.7rem 1rem; background: var(--painel); border: 4px solid var(--destaque); border-radius: var(--raio); margin-bottom: 0.8rem; }
+.pedido h2 { margin: 0 0 0.2rem; font-size: 1em; color: var(--texto-suave); }
+.pedido-texto { margin: 0 0 0.5rem; font-size: 1.35em; font-weight: bold; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.4rem; }
+.chip { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.7rem 0.3rem 0.3rem; background: var(--fundo); border: 3px solid var(--borda); border-radius: 16px; }
+.chip.olhe { border-color: var(--dica-borda); background: var(--dica-fundo); border-width: 5px; }
+.chip-desenho { position: relative; display: inline-flex; align-items: center; background: #fff; border-radius: 10px; }
+.chip-desenho svg.robo-svg { width: 3.2rem; height: 4.2rem; }
+.chip-desenho.comparar b { font-size: 1.8em; padding: 0 0.2rem; color: #1f2937; }
+.chip-desenho .xis { position: absolute; inset: 0; width: 100%; height: 100%; }
+.chip-desenho .xis path { stroke: #1f2937; stroke-width: 9; stroke-linecap: round; fill: none; }
+.chip-texto { font-weight: bold; }
+
+.oficina { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(13rem, 1fr) minmax(16rem, 1.4fr); gap: 1rem; align-items: start; }
+@media (max-width: 900px) { .oficina { grid-template-columns: 1fr 1fr; } .painel-opcoes { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .oficina { grid-template-columns: 1fr; } }
+.robo-montado { margin: 0; padding: 0.5rem; background: #fff; border: 4px solid var(--borda); border-radius: var(--raio); text-align: center; color: #1f2937; }
+.robo-area svg { width: 100%; max-height: 22rem; }
+.robo-montado figcaption { font-weight: bold; }
+.menu-pecas { display: flex; flex-direction: column; gap: 0.45rem; }
+.botao-categoria {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+  min-height: 3.2rem; padding: 0.4rem 0.9rem;
+  font: inherit; color: var(--texto); background: var(--painel);
+  border: 3px solid var(--borda); border-radius: 14px; cursor: pointer; text-align: left;
+}
+.botao-categoria:hover { background: var(--primaria-clara); }
+.botao-categoria.ativa { border-color: var(--primaria); border-width: 5px; background: var(--primaria-clara); }
+.cat-nome { font-weight: bold; }
+.cat-valor { padding: 0.1rem 0.6rem; background: var(--fundo); border-radius: 999px; }
+.botao-categoria.falta .cat-valor { border: 2px dashed var(--texto-suave); }
+.menu-pecas .entregar { margin-top: 0.4rem; min-height: 4rem; font-size: 1.15em; }
+.painel-opcoes { padding: 0.6rem; background: var(--painel); border: 4px solid var(--primaria); border-radius: var(--raio); }
+.opcoes-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 0.6rem; }
+.botao-opcao {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.4rem;
+  font: inherit; font-weight: bold; color: var(--texto); background: var(--fundo);
+  border: 4px solid var(--borda); border-radius: 16px; cursor: pointer; min-height: 9rem;
+}
+.botao-opcao:hover { border-color: var(--primaria); }
+.botao-opcao[aria-pressed="true"] { border-color: var(--primaria); border-width: 6px; background: var(--primaria-clara); }
+.botao-opcao[aria-pressed="true"] .opcao-nome::before { content: "✔ "; }
+.opcao-desenho { display: grid; place-items: center; width: 100%; background: #fff; border-radius: 10px; }
+.opcao-desenho svg { width: 5rem; height: 6.5rem; }
+.amostra-cor { display: block; width: 4rem; height: 4rem; margin: 1rem; border-radius: 50%; border: 3px solid #2d3748; }
+
+/* 3º ano: pistas e robôs */
+.lista-pistas { list-style: none; padding: 0; margin: 0 0 0.6rem; display: grid; gap: 0.5rem; }
+.pista {
+  display: flex; align-items: center; gap: 0.7rem; width: 100%; padding: 0.3rem 0.8rem 0.3rem 0.3rem;
+  font: inherit; font-weight: bold; color: var(--texto); text-align: left;
+  background: var(--painel); border: 3px solid var(--borda); border-radius: 16px; cursor: pointer;
+}
+.pista .chip { border: none; padding: 0; background: none; }
+.pista-texto { font-size: 1.1em; flex: 1; }
+.pista.olhe { border-color: var(--dica-borda); border-width: 5px; background: var(--dica-fundo); }
+.pistas-opcoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 0.5rem; }
+.pista.alternavel .marca { width: 2rem; height: 2rem; border: 3px solid var(--texto); border-radius: 8px; flex: none; display: grid; place-items: center; }
+.pista.alternavel[aria-pressed="true"] { border-color: var(--primaria); border-width: 5px; background: var(--primaria-clara); }
+.pista.alternavel[aria-pressed="true"] .marca::after { content: "✔"; font-size: 1.4em; }
+.contador { font-weight: bold; }
+.instrucao { font-size: 1.2em; font-weight: bold; margin: 0 0 0.6rem; }
+.grade-robos { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.8rem; margin-bottom: 0.8rem; }
+.cartao-robo { display: flex; flex-direction: column; gap: 0.3rem; }
+.robo-escolher {
+  position: relative; display: block; padding: 0.4rem; cursor: pointer;
+  background: #fff; border: 4px solid var(--borda); border-radius: var(--raio); color: #1f2937;
+}
+.robo-escolher:hover { border-color: var(--primaria); }
+.robo-escolher svg { width: 100%; height: 11rem; }
+.numero-robo {
+  position: absolute; top: 0.3rem; left: 0.3rem; display: grid; place-items: center;
+  width: 2.3rem; height: 2.3rem; border-radius: 50%; background: var(--barra); color: #fff; font-weight: bold; font-size: 1.2em;
+}
+body.contraste .numero-robo { background: #ffff00; color: #000; }
+.selo-alvo { position: absolute; top: 0.3rem; right: 0.3rem; padding: 0.1rem 0.5rem; background: var(--destaque); color: #1f2937; border-radius: 999px; font-weight: bold; font-size: 0.85em; }
+.cartao-robo.alvo .robo-escolher { border-color: var(--destaque); border-width: 6px; }
+.riscar { min-height: 2.8rem; font: inherit; font-weight: bold; color: var(--texto); background: var(--painel); border: 3px solid var(--borda); border-radius: 999px; cursor: pointer; }
+.cartao-robo.riscado .robo-escolher { opacity: 0.45; }
+.cartao-robo.riscado .robo-escolher::after {
+  content: ""; position: absolute; inset: 10%;
+  background: linear-gradient(45deg, transparent 46%, #1f2937 46%, #1f2937 54%, transparent 54%),
+              linear-gradient(-45deg, transparent 46%, #1f2937 46%, #1f2937 54%, transparent 54%);
+}
+.cartao-robo.sobra .robo-escolher { border-color: var(--dica-borda); border-width: 6px; border-style: dashed; }
+
+/* ---------- Janelas ---------- */
+.janela {
+  width: min(46rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); padding: 0;
+  color: var(--texto); background: var(--painel); border: 5px solid var(--primaria); border-radius: 24px;
+}
+.janela::backdrop { background: rgba(15, 23, 42, 0.55); }
+.janela-corpo { padding: 1rem 1.3rem 0.5rem; }
+.janela-corpo h2 { margin-top: 0; }
+.janela-rodape { display: flex; justify-content: flex-end; gap: 0.6rem; padding: 0.6rem 1.3rem 1.1rem; }
+.teclas summary { cursor: pointer; font-weight: bold; min-height: 2.6rem; padding: 0.3rem 0; }
+
+.janela-pausa { width: 100vw; height: 100vh; max-width: none; max-height: none; border: none; border-radius: 0; background: #e9f0ef; color: #1f2937; }
+body.contraste .janela-pausa { background: #000; color: #fff; }
+.pausa-conteudo { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 0.6rem; padding: 2rem; font-size: 1.3em; }
+.pausa-conteudo p { margin: 0; }
+.respira { width: 9rem; height: 9rem; border-radius: 50%; background: #b9d3cf; animation: respirar 8s ease-in-out infinite; }
+@keyframes respirar { 50% { transform: scale(1.25); } }
+
+.janela-fim { text-align: center; border-color: var(--certo-borda); }
+.fim-estrelas .estrelas { font-size: 3.2rem; }
+.fim-detalhe { font-size: 1.1em; }
+.fim-peca { display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: var(--fundo); border-radius: 18px; }
+.fim-peca .campeao-svg { width: 8rem; height: 10rem; }
+.fim-peca p { margin: 0.2rem 0 0; font-weight: bold; }
+.fim-botoes { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; padding: 1rem 0 0.6rem; }
+
+/* Ajustes e área do professor */
+.ajustes, .botoes-professor { display: grid; gap: 0.5rem; }
+.alternar {
+  display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.5rem 0.9rem; min-height: 3.6rem;
+  font: inherit; color: var(--texto); text-align: left; background: var(--painel);
+  border: 3px solid var(--borda); border-radius: 14px; cursor: pointer;
+}
+.alternar small { display: block; font-size: 0.8em; color: var(--texto-suave); }
+.alternar-texto { flex: 1; }
+.alternar .chave { width: 3.2rem; height: 1.8rem; border-radius: 999px; background: #cbd5e1; position: relative; flex: none; border: 2px solid var(--texto); }
+.alternar .chave::after { content: ""; position: absolute; top: 0.15rem; left: 0.15rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: #fff; border: 2px solid #1f2937; }
+.alternar[aria-pressed="true"] { border-color: var(--primaria); }
+.alternar[aria-pressed="true"] .chave { background: var(--primaria); }
+.alternar[aria-pressed="true"] .chave::after { left: auto; right: 0.15rem; }
+.estado { font-weight: bold; min-width: 6rem; text-align: right; }
+.pergunta-professor { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.pergunta-professor label { width: 100%; font-weight: bold; }
+.pergunta-professor input { width: 6rem; min-height: 3rem; font: inherit; font-size: 1.3em; text-align: center; border: 3px solid var(--texto); border-radius: 10px; background: var(--painel); color: var(--texto); }
+.confirmar { margin-top: 0.6rem; padding: 0.6rem 1rem; border: 3px dashed #b91c1c; border-radius: 14px; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.confirmar p { width: 100%; margin: 0; font-weight: bold; }
+.nota { font-size: 0.9em; color: var(--texto-suave); }
+
+/* ---------- Rodapé ---------- */
+.rodape { padding: 0.6rem 1rem 1rem; text-align: center; }
+.botao-discreto { font: inherit; font-size: 0.85em; color: var(--texto-suave); background: none; border: 2px solid transparent; border-radius: 10px; padding: 0.4rem 0.8rem; cursor: pointer; text-decoration: underline; min-height: 2.6rem; }
+
+/* ---------- Modo Calmo: menos enfeites ---------- */
+body.calmo .sala-frase, body.calmo .chip-desenho .xis path { stroke-width: 9; }
+body.calmo .cartao-sala .sala-frase { display: none; }
+body.calmo .botao, body.calmo .botao-ano, body.calmo .cartao-sala, body.calmo .botao-fase { box-shadow: none; }
+
+/* ---------- Sem animações (ajuste, Modo Calmo sem animação ou preferência do sistema) ---------- */
+body.sem-animacoes *, body.sem-animacoes *::before, body.sem-animacoes *::after {
+  animation: none !important; transition: none !important;
+}
+body.calmo .mensagem.aparece { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
