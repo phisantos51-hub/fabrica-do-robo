@@ -207,7 +207,7 @@
 
   Salas.torre = {
     nome: "Sala da Torre",
-    frase: "Mude a torre de lugar, um disco por vez!",
+    frase: "Passe os discos para outro pino, um por vez!",
     desenho: function () { return desenhoTorre(false); },
     lista: lista,
     abrir: abrir,

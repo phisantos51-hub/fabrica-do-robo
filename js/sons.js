@@ -114,7 +114,12 @@ const Sons = (function () {
 const Voz = (function () {
   const temVoz = "speechSynthesis" in window;
   let vozPt = null, ultima = "", fila = 0, jaFalou = false;
-  const anuncio = function () { return document.getElementById("anuncio"); };
+  // Com uma janela aberta, o resto da página fica inativo para o leitor de tela:
+  // por isso o aviso vai para a região de aviso da própria janela.
+  const anuncio = function () {
+    const dlg = document.querySelector("dialog[open]");
+    return (dlg && dlg.querySelector(".anuncio-janela")) || document.getElementById("anuncio");
+  };
 
   function escolherVoz() {
     if (!temVoz) return;

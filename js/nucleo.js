@@ -33,6 +33,12 @@ const Config = (function () {
     b.toggle("letras-grandes", dados.letrasGrandes);
     b.toggle("contraste", dados.altoContraste);
     b.toggle("com-som", somLigado());
+    // No Modo Áudio, o NVDA e o Narrador passam as setas direto para o jogo.
+    const main = document.getElementById("tela");
+    if (main) {
+      if (dados.modoAudio) { main.setAttribute("role", "application"); main.setAttribute("aria-label", "Fábrica do Robô"); }
+      else { main.removeAttribute("role"); main.removeAttribute("aria-label"); }
+    }
     ouvintes.forEach(function (f) { f(); });
   }
   function somLigado() { return dados.modoAudio || dados.som; }
@@ -369,6 +375,7 @@ const App = (function () {
   document.addEventListener("close", function (ev) {
     if (ev.target.tagName !== "DIALOG") return;
     Voz.parar();
+    if ((ev.target.id === "dlg-professor" || ev.target.id === "dlg-ajustes") && tela && tela.recarregar) { tela.recarregar(); return; }
     if (antesDaJanela && document.contains(antesDaJanela)) focar(antesDaJanela, true);
     else focar($("titulo"), true);
   }, true);
@@ -582,6 +589,7 @@ function telaInicio() {
     foco: function () { return document.querySelector("[data-ano].ativo"); },
     fala: Config.get("modoAudio") ? "Fábrica do Robô. Escolha o ano com as setas e aperte Enter." : null,
     voltar: function () { Voz.anunciar("Você já está na tela inicial."); },
+    recarregar: telaInicio,
     montar: function (c) {
       // Modo Áudio
       const audio = el("div", { class: "faixa-audio" });
@@ -698,6 +706,7 @@ function telaFases(salaId, focarIndice) {
     fala: s.nome + ", " + ANOS[ano] + ". Escolha uma fase.",
     foco: function () { return document.querySelector('[data-fase="' + Math.max(0, proxima) + '"]'); },
     voltar: telaInicio,
+    recarregar: function () { telaFases(salaId); },
     montar: function (c) {
       c.append(el("p", { class: "frase-sala", texto: s.frase }));
       const g = el("div", { class: "fases", "data-grupo": "fases" });
@@ -710,7 +719,8 @@ function telaFases(salaId, focarIndice) {
           "aria-disabled": livre ? null : "true",
           html: '<span class="fase-num">Fase ' + (i + 1) + "</span>" + (rot ? '<span class="fase-tipo">' + rot + "</span>" : "") +
             (livre ? estrelasHTML(est) : '<span class="cadeado" aria-hidden="true">🔒</span>'),
-          "data-fala": "Fase " + (i + 1) + (rot ? ", " + rot : "") + ". " + (livre ? estrelasTexto(est) : "trancada")
+          "data-fala": "Fase " + (i + 1) + (rot ? ", " + rot : "") + ". " + (livre ? estrelasTexto(est) : "trancada"),
+          "aria-label": "Fase " + (i + 1) + (rot ? ", " + rot : "") + ". " + (livre ? estrelasTexto(est) : "trancada")
         });
         b.addEventListener("click", function () {
           if (!livre) { Voz.anunciar("A fase " + (i + 1) + " abre quando você terminar a fase " + i + "."); mostrarAviso(c, "A fase " + (i + 1) + " abre quando você terminar a fase " + i + "."); return; }

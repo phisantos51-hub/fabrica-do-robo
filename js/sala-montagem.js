@@ -177,6 +177,7 @@
         b.setAttribute("aria-expanded", String(campo === aberta));
         b.innerHTML = '<span class="cat-nome">' + p.nome + '</span><span class="cat-valor">' + (falta ? "escolha" : valor) + "</span>";
         b.setAttribute("data-fala", p.nome + ": " + valor + ". Aperte Enter para escolher.");
+        b.setAttribute("aria-label", p.nome + ": " + (falta ? "falta escolher" : valor));
       });
     }
 
