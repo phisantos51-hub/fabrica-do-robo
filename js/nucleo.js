@@ -91,6 +91,7 @@ const ICONES = (function () {
     lupa: svg('<circle cx="20" cy="20" r="12"/><path d="M29 29l12 12"/>'),
     lapis: svg('<path d="M10 38l4-12L32 8l8 8-18 18z"/><path d="M28 12l8 8"/>'),
     robo: svg('<rect x="12" y="16" width="24" height="18" rx="4"/><path d="M24 16v-6"/><circle cx="24" cy="8" r="2.5" fill="currentColor"/><circle cx="19" cy="24" r="2" fill="currentColor"/><circle cx="29" cy="24" r="2" fill="currentColor"/><path d="M16 34v6M32 34v6"/>'),
+    recomecar: svg('<path d="M10 24a14 14 0 1 0 4-10"/><path d="M8 8v8h8"/>'),
     seta: svg('<path d="M8 24h30M28 14l10 10-10 10"/>'),
     lista: svg('<path d="M16 12h24M16 24h24M16 36h24"/><circle cx="8" cy="12" r="2" fill="currentColor"/><circle cx="8" cy="24" r="2" fill="currentColor"/><circle cx="8" cy="36" r="2" fill="currentColor"/>'),
     calmo: svg('<path d="M30 8a16 16 0 1 0 10 26A14 14 0 0 1 30 8z" fill="currentColor"/>'),
@@ -343,7 +344,12 @@ const App = (function () {
     if (ligar) {
       Sons.destravar();
       Voz.anunciar("Modo Áudio ligado. Use as setas para escolher, Enter para confirmar e Esc para voltar. Aperte H para ouvir a ajuda.", "acerto");
-      if (tela && tela.id === "inicio") setTimeout(function () { focar(document.querySelector("[data-ano].ativo") || primeiroItem($("tela")), true); }, 50);
+      setTimeout(function () {
+        const at = document.activeElement;
+        const emItem = at && at !== document.body && at.id !== "titulo" && at.closest("[data-grupo]") && at.matches("button, input, select");
+        if (tela && tela.id === "inicio") focar(document.querySelector("[data-ano].ativo") || primeiroItem($("tela")), true);
+        else if (!emItem) focar((tela && tela.foco && (typeof tela.foco === "function" ? tela.foco() : $("tela").querySelector(tela.foco))) || primeiroItem($("tela")), true);
+      }, 50);
     } else {
       const a = document.getElementById("anuncio"); a.textContent = "";
       setTimeout(function () { a.textContent = "Modo Áudio desligado."; }, 60);
