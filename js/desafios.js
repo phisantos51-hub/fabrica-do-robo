@@ -244,5 +244,52 @@ const DESAFIOS = {
       { sequencia: "sino sino apito apito sino sino apito ?", resposta: "apito" },
       { tipo: "erro", sequencia: "5 10 15 21 25", erro: 4 }
     ]
+  },
+
+  /* -----------------------------------------------------------------------
+     MODO ÁUDIO (só para quem joga com o Modo Áudio ligado)
+     Desafios curtos, pensados para um estudante cego do 1º ano.
+     A cada 3 desafios o jogo comemora e pergunta se quer continuar.
+
+     montagem: cada pedido é uma lista com 1 ou 2 regras.
+       Só valem as peças cabeca, antenas e locomocao, sempre com "=".
+       Exemplo: ["cabeca = redonda"]  ou  ["antenas = 2", "locomocao = rodas"]
+       Coloque primeiro os pedidos de 1 regra e depois os de 2 regras.
+
+     padroes: só sons (bip, buzina, tambor, sino, apito), no máximo
+       4 sons antes do "?". opcoes: 2 ou 3 (quantas respostas o jogo oferece).
+     ----------------------------------------------------------------------- */
+  modoAudio: {
+    montagem: [
+      ["cabeca = redonda"],
+      ["locomocao = rodas"],
+      ["antenas = 2"],
+      ["cabeca = triangular"],
+      ["locomocao = esteira"],
+      ["antenas = 1"],
+      ["cabeca = quadrada"],
+      ["locomocao = pernas"],
+      ["antenas = 0"],
+      ["cabeca = redonda", "antenas = 2"],
+      ["locomocao = rodas", "cabeca = quadrada"],
+      ["antenas = 1", "locomocao = esteira"],
+      ["cabeca = triangular", "locomocao = pernas"],
+      ["antenas = 0", "cabeca = redonda"],
+      ["locomocao = esteira", "antenas = 2"]
+    ],
+    padroes: [
+      { sequencia: "bip buzina bip ?", resposta: "buzina", opcoes: 2 },
+      { sequencia: "tambor sino tambor ?", resposta: "sino", opcoes: 2 },
+      { sequencia: "apito bip apito ?", resposta: "bip", opcoes: 2 },
+      { sequencia: "sino tambor sino tambor ?", resposta: "sino", opcoes: 2 },
+      { sequencia: "buzina apito buzina ?", resposta: "apito", opcoes: 2 },
+      { sequencia: "bip tambor bip tambor ?", resposta: "bip", opcoes: 2 },
+      { sequencia: "sino bip sino ?", resposta: "bip", opcoes: 3 },
+      { sequencia: "tambor apito tambor apito ?", resposta: "tambor", opcoes: 3 },
+      { sequencia: "buzina sino buzina ?", resposta: "sino", opcoes: 3 },
+      { sequencia: "sino apito sino ?", resposta: "apito", opcoes: 3 },
+      { sequencia: "bip buzina bip buzina ?", resposta: "bip", opcoes: 3 },
+      { sequencia: "bip sino bip sino ?", resposta: "bip", opcoes: 3 }
+    ]
   }
 };

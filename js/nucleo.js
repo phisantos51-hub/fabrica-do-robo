@@ -20,6 +20,7 @@ const Config = (function () {
     semAnimacoes: false,
     letrasGrandes: false,
     altoContraste: false,
+    velocidadeVoz: "normal",   // só no Modo Áudio: normal, rapida ou maisRapida
     ano: 1
   };
   let dados = Object.assign({}, PADRAO, Guardar.ler(CHAVE) || {});
@@ -75,7 +76,10 @@ const Progresso = (function () {
     },
     concluidos: concluidos,
     liberarTudo: function (v) { if (v !== undefined) { dados.liberarTudo = v; salvar(); } return dados.liberarTudo; },
-    apagar: function () { dados = { estrelas: {}, liberarTudo: false }; salvar(); }
+    apagar: function () {
+      dados = { estrelas: {}, liberarTudo: false }; salvar();
+      if (typeof ModoAudio !== "undefined") ModoAudio.apagar();
+    }
   };
 })();
 
@@ -210,6 +214,7 @@ const App = (function () {
   /* ----- Telas ----- */
   function abrir(def) {
     Voz.parar();
+    if (tela && tela.sair) tela.sair();   // ex.: para a Esteira Rápida ao trocar de tela
     tela = def;
     const main = $("tela");
     main.innerHTML = "";
@@ -226,7 +231,7 @@ const App = (function () {
     main.append(conteudo);
     def.montar(conteudo);
     document.title = def.titulo + " – Fábrica do Robô";
-    $("btn-inicio").hidden = def.id === "inicio";
+    $("btn-inicio").hidden = def.id === "inicio" || def.id === "inicio-audio";
     progresso(def.progresso);
     // Foco: no Modo Áudio vai direto ao primeiro item; senão, ao título (o leitor de tela lê o título).
     const alvo = def.foco ? (typeof def.foco === "function" ? def.foco() : main.querySelector(def.foco)) : null;
@@ -282,8 +287,7 @@ const App = (function () {
     if (i < 0) { if (lista[0]) focar(lista[0]); return; }
     const j = i + passo;
     if (j < 0 || j >= lista.length) {
-      Sons.tocar("limite");
-      if (Config.get("modoAudio")) Voz.falarFoco(j < 0 ? "Começo da lista." : "Fim da lista.");
+      Sons.tocar("limite");   // só o som, sem palavras
       return;
     }
     focar(lista[j]);
@@ -304,7 +308,8 @@ const App = (function () {
     const e = ev.target;
     if (focoSilencioso || !e || e === document.body || e.id === "titulo") return;
     if (!e.matches("button, [data-nav], input, select, summary")) return;
-    Voz.falarFoco(rotulo(e), e.getAttribute("data-som") || null);
+    const pan = e.hasAttribute("data-pan") ? Number(e.getAttribute("data-pan")) : undefined;
+    Voz.falarFoco(rotulo(e), e.getAttribute("data-som") || null, e.getAttribute("data-som-arg") || undefined, pan);
   });
 
   /* ----- Teclado ----- */
@@ -316,12 +321,15 @@ const App = (function () {
     // Se o navegador não deixou falar o aviso na abertura, fala agora, na primeira tecla.
     if (primeiraTecla) {
       primeiraTecla = false;
-      if (!Config.get("modoAudio") && !Voz.jaFalou() && e.key !== "Tab") {
+      if (!Voz.jaFalou() && e.key !== "Tab") {
         e.preventDefault();
-        Voz.dizerSolto(AVISO_ABERTURA, true);
+        if (Config.get("modoAudio")) Voz.repetir();
+        else Voz.dizerSolto(AVISO_ABERTURA, true);
         return;
       }
     }
+    // Modo Áudio: qualquer tecla de navegação corta a fala em andamento.
+    if (Config.get("modoAudio") && /^(Arrow|Enter$|Escape$|Tab$|Home$|End$| $|[0-9]$)/.test(e.key)) Voz.parar();
     const dlg = document.querySelector("dialog[open]");
     const digitando = e.target.matches && e.target.matches("input, select, textarea");
     const k = e.key;
@@ -339,6 +347,12 @@ const App = (function () {
   document.addEventListener("pointerdown", function () { Sons.destravar(); primeiraTecla = false; }, { once: true });
 
   function ajudaFalada() {
+    if (Config.get("modoAudio")) {
+      // Frases curtas, uma de cada vez.
+      const a = tela && tela.ajuda ? (Array.isArray(tela.ajuda) ? tela.ajuda : [tela.ajuda]) : ["Setas: escolher.", "Enter: confirmar."];
+      Voz.sequencia(a.concat(["Esc: voltar.", "Espaço: repetir."]).map(function (t) { return { texto: t }; }));
+      return;
+    }
     const geral = " Teclas: setas para escolher, Enter para confirmar, Esc para voltar, barra de espaço para repetir, F1 liga e desliga o Modo Áudio.";
     Voz.anunciar((tela && tela.ajuda ? tela.ajuda : "Use as setas para escolher e Enter para confirmar.") + geral);
   }
@@ -347,20 +361,17 @@ const App = (function () {
     const ligar = !Config.get("modoAudio");
     Config.set("modoAudio", ligar);
     Voz.parar();
+    const dlg = document.querySelector("dialog[open]");
+    if (dlg && dlg.id !== "dlg-professor" && dlg.id !== "dlg-ajustes") dlg.close();
     if (ligar) {
       Sons.destravar();
-      Voz.anunciar("Modo Áudio ligado. Use as setas para escolher, Enter para confirmar e Esc para voltar. Aperte H para ouvir a ajuda.", "acerto");
-      setTimeout(function () {
-        const at = document.activeElement;
-        const emItem = at && at !== document.body && at.id !== "titulo" && at.closest("[data-grupo]") && at.matches("button, input, select");
-        if (tela && tela.id === "inicio") focar(document.querySelector("[data-ano].ativo") || primeiroItem($("tela")), true);
-        else if (!emItem) focar((tela && tela.foco && (typeof tela.foco === "function" ? tela.foco() : $("tela").querySelector(tela.foco))) || primeiroItem($("tela")), true);
-      }, 50);
+      // O Modo Áudio tem o seu próprio menu simples (ver modo-audio.js).
+      if (!dlg || (dlg.id !== "dlg-professor" && dlg.id !== "dlg-ajustes")) telaInicio({ ligou: true });
     } else {
+      if (!dlg || (dlg.id !== "dlg-professor" && dlg.id !== "dlg-ajustes")) telaInicio();
       const a = document.getElementById("anuncio"); a.textContent = "";
       setTimeout(function () { a.textContent = "Modo Áudio desligado."; }, 60);
     }
-    if (tela && tela.id === "inicio") atualizarBotoesInicio();
   }
 
   /* ----- Janelas (dialog) ----- */
@@ -538,7 +549,32 @@ function painelProfessor(corpo) {
   apagar.addEventListener("click", function () { confirmar.hidden = false; confirmar.querySelector("button").focus(); });
 
   grupo.append(liberar, apagar);
-  corpo.append(grupo, confirmar, msg, el("h3", { texto: "Acessibilidade" }), painelAjustes(),
+
+  // Escolhas em botões (ano do estudante e velocidade da voz do Modo Áudio)
+  function escolhas(titulo, chave, opcoes, aviso) {
+    const caixa = el("div", { class: "escolhas-professor", role: "group", "aria-label": titulo });
+    caixa.append(el("h3", { texto: titulo }));
+    const linha = el("div", { class: "anos", "data-grupo": "prof-" + chave });
+    opcoes.forEach(function (o) {
+      const b = el("button", { type: "button", class: "botao-ano", texto: o.nome });
+      function pintar() { const at = Config.get(chave) === o.valor; b.classList.toggle("ativo", at); b.setAttribute("aria-pressed", String(at)); }
+      b.addEventListener("click", function () {
+        Config.set(chave, o.valor);
+        linha.querySelectorAll("button").forEach(function (x) { x.dispatchEvent(new Event("pintar")); });
+        msg.textContent = aviso + o.nome + ".";
+        if (chave === "velocidadeVoz" && Config.get("modoAudio")) Voz.anunciar("Velocidade " + o.nome.toLowerCase() + ".");
+      });
+      b.addEventListener("pintar", pintar);
+      pintar();
+      linha.append(b);
+    });
+    caixa.append(linha);
+    return caixa;
+  }
+  const anoBox = escolhas("Ano do estudante", "ano", [{ nome: "1º ano", valor: 1 }, { nome: "2º ano", valor: 2 }, { nome: "3º ano", valor: 3 }], "Ano escolhido: ");
+  const velBox = escolhas("Velocidade da voz (Modo Áudio)", "velocidadeVoz", [{ nome: "Normal", valor: "normal" }, { nome: "Rápida", valor: "rapida" }, { nome: "Mais rápida", valor: "maisRapida" }], "Velocidade da voz: ");
+
+  corpo.append(grupo, confirmar, msg, anoBox, velBox, el("h3", { texto: "Acessibilidade" }), painelAjustes(),
     el("p", { class: "nota", texto: "O progresso e os ajustes ficam guardados só no navegador deste computador. O jogo não envia nenhum dado para a internet." }));
   App.focar(liberar, true);
 }
@@ -579,7 +615,9 @@ function concluirDesafio(info) {
    ========================================================================= */
 let atualizarBotoesInicio = function () {};
 
-function telaInicio() {
+function telaInicio(op) {
+  // Com o Modo Áudio ligado, a tela inicial é o menu simples de 4 opções.
+  if (Config.get("modoAudio") && typeof ModoAudio !== "undefined") { ModoAudio.inicio(op && op.ligou === true ? op : null); return; }
   const ano = Config.get("ano");
   App.abrir({
     id: "inicio",
@@ -799,7 +837,6 @@ document.addEventListener("DOMContentLoaded", function () {
   telaInicio();
   // Aviso de abertura (alguns navegadores só deixam falar depois da primeira tecla).
   setTimeout(function () {
-    if (Config.get("modoAudio")) Voz.anunciar("Fábrica do Robô. Modo Áudio ligado. Escolha o ano com as setas e aperte Enter. Aperte H para ouvir a ajuda.");
-    else Voz.dizerSolto(AVISO_ABERTURA, true);
+    if (!Config.get("modoAudio")) Voz.dizerSolto(AVISO_ABERTURA, true);   // no Modo Áudio, o próprio menu já fala
   }, 400);
 });

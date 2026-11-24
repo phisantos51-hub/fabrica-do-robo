@@ -7,6 +7,16 @@
 
 const Sons = (function () {
   let ctx = null, mestre = null;
+  let panAtual = 0;   // posição do som: -1 = esquerda, 0 = meio, 1 = direita (fones de ouvido)
+
+  // Liga o som ao alto-falante, passando pela posição esquerda/direita quando houver.
+  function saida(c, no, pan) {
+    if (pan && c.createStereoPanner) {
+      const p = c.createStereoPanner();
+      p.pan.value = Math.max(-1, Math.min(1, pan));
+      no.connect(p); p.connect(mestre);
+    } else no.connect(mestre);
+  }
 
   function contexto() {
     if (!ctx) {
@@ -36,7 +46,7 @@ const Sons = (function () {
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.linearRampToValueAtTime(vol, t0 + 0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(g); g.connect(mestre);
+    osc.connect(g); saida(c, g, op.pan !== undefined ? op.pan : panAtual);
     osc.start(t0); osc.stop(t0 + dur + 0.05);
   }
 
@@ -54,12 +64,13 @@ const Sons = (function () {
     const vol = (op.vol || 0.3) * (calmo ? 0.4 : 1);
     g.gain.setValueAtTime(vol, t0);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    src.connect(filtro); filtro.connect(g); g.connect(mestre);
+    src.connect(filtro); filtro.connect(g); saida(c, g, op.pan !== undefined ? op.pan : panAtual);
     src.start(t0);
   }
 
   // Duração aproximada de cada som (em segundos), para tocar em sequência.
-  const DURACAO = { buzina: 0.5, sino: 0.7, roda: 0.5, esteira: 0.5, acerto: 0.6, pernas: 0.45, apito: 0.4, padrao: 0.45 };
+  const DURACAO = { buzina: 0.5, sino: 0.7, roda: 0.5, esteira: 0.5, acerto: 0.6, pernas: 0.45, apito: 0.4, padrao: 0.45,
+    festa_esteira: 1.4, festa_montagem: 1.4, festa_torre: 1.4, festa_padroes: 1.4, pecaNova: 1.1, proximo: 0.4 };
 
   const CATALOGO = {
     // Peças do robô
@@ -93,13 +104,67 @@ const Sons = (function () {
     limite:   function () { nota(200, 0.08, { vol: 0.15 }); },
     clique:   function () { nota(520, 0.05, { vol: 0.1 }); },
     pegar:    function () { nota(500, 0.12, { ate: 700, vol: 0.15 }); },
-    soltar:   function () { nota(700, 0.12, { ate: 450, vol: 0.15 }); }
+    soltar:   function () { nota(700, 0.12, { ate: 450, vol: 0.15 }); },
+
+    /* ----- Modo Áudio: um som diferente para cada opção, para reconhecer sem esperar a fala ----- */
+    cab_redonda:    function () { nota(300, 0.3, { ate: 620, vol: 0.3 }); },                                                    // "blup" redondo
+    cab_quadrada:   function () { nota(330, 0.09, { tipo: "square", vol: 0.12 }); nota(330, 0.09, { tipo: "square", vol: 0.12, atraso: 0.16 }); }, // "toc, toc"
+    cab_triangular: function () { [880, 1175, 1568].forEach(function (f, i) { nota(f, 0.1, { tipo: "triangle", vol: 0.22, atraso: i * 0.08 }); }); }, // "tim-tim-tim"
+    ant_0:          function () { nota(180, 0.2, { ate: 110, vol: 0.3 }); },                                                    // "puf" (nenhuma)
+    ant_1:          function () { nota(1500, 0.14, { vol: 0.2 }); },                                                            // um apito
+    ant_2:          function () { nota(1500, 0.12, { vol: 0.2 }); nota(1500, 0.12, { vol: 0.2, atraso: 0.18 }); },              // dois apitos
+    pode:           function () { nota(660, 0.1, { vol: 0.2 }); nota(880, 0.14, { vol: 0.2, atraso: 0.09 }); },
+    naoPode:        function () { nota(140, 0.16, { tipo: "triangle", vol: 0.35 }); },
+    proximo:        function () { nota(300, 0.3, { ate: 900, vol: 0.12 }); ruido(0.25, { filtro: 2500, vol: 0.06 }); },
+    pecaNova:       function () { [784, 988, 1175, 1568, 1976].forEach(function (f, i) { nota(f, 0.14, { vol: 0.16, atraso: i * 0.07 }); }); nota(1568, 0.6, { vol: 0.12, atraso: 0.4 }); nota(2093, 0.6, { vol: 0.08, atraso: 0.4 }); },
+    // Sinal de cada sala no menu
+    salaEsteira:    function () { nota(90, 0.4, { tipo: "sawtooth", vol: 0.1, pan: -0.8 }); nota(90, 0.4, { tipo: "sawtooth", vol: 0.1, pan: 0.8, atraso: 0.25 }); },
+    salaMontagem:   function () { nota(700, 0.07, { tipo: "square", vol: 0.12 }); nota(950, 0.07, { tipo: "square", vol: 0.12, atraso: 0.1 }); nota(1200, 0.1, { tipo: "square", vol: 0.1, atraso: 0.2 }); },
+    salaTorre:      function () { [247, 370, 660].forEach(function (f, i) { nota(f, 0.18, { tipo: "triangle", vol: 0.28, atraso: i * 0.15 }); }); },
+    salaPadroes:    function () { nota(880, 0.12, { tipo: "square", vol: 0.12 }); nota(330, 0.25, { tipo: "sawtooth", vol: 0.1, atraso: 0.18 }); nota(880, 0.12, { tipo: "square", vol: 0.12, atraso: 0.5 }); },
+    // Comemoração diferente para cada sala
+    festa_esteira:  function () { for (let i = 0; i < 6; i++) nota(400 + i * 120, 0.12, { vol: 0.16, pan: -1 + i * 0.4, atraso: i * 0.1 }); nota(1047, 0.5, { vol: 0.15, atraso: 0.65 }); },
+    festa_montagem: function () { [0, 0.15, 0.3].forEach(function (t) { nota(800, 0.06, { tipo: "square", vol: 0.1, atraso: t }); }); [523, 659, 784, 1047].forEach(function (f, i) { nota(f, 0.25, { vol: 0.17, atraso: 0.5 + i * 0.12 }); }); },
+    festa_torre:    function () { [262, 330, 392, 523, 659, 784].forEach(function (f, i) { nota(f, 0.18, { tipo: "triangle", vol: 0.22, atraso: i * 0.12 }); }); },
+    festa_padroes:  function () { nota(880, 0.12, { tipo: "square", vol: 0.12 }); nota(440, 0.12, { tipo: "square", vol: 0.12, atraso: 0.18 }); nota(880, 0.12, { tipo: "square", vol: 0.12, atraso: 0.36 }); nota(440, 0.12, { tipo: "square", vol: 0.12, atraso: 0.54 }); [784, 1047].forEach(function (f, i) { nota(f, 0.35, { vol: 0.16, atraso: 0.8 + i * 0.18 }); }); }
   };
 
-  function tocar(nome, arg) {
+  function tocar(nome, arg, pan) {
     if (!Config.somLigado()) return;
     const f = CATALOGO[nome]; if (!f) return;
+    panAtual = pan || 0;
     try { f(arg); } catch (e) { /* sem som neste computador */ }
+    panAtual = 0;
+  }
+
+  /* Esteira Rápida: um motor que "entra" pela esquerda e "sai" pela direita em durMs. */
+  function passar(durMs) {
+    const nada = { parar: function () {} };
+    if (!Config.somLigado()) return nada;
+    const c = contexto(); if (!c) return nada;
+    try {
+      const t0 = c.currentTime, dur = durMs / 1000;
+      const osc = c.createOscillator(); osc.type = "sawtooth"; osc.frequency.value = 70;
+      const filtro = c.createBiquadFilter(); filtro.type = "lowpass"; filtro.frequency.value = 320;
+      const g = c.createGain();
+      const vol = Config.get("modoCalmo") ? 0.06 : 0.12;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(vol, t0 + 0.4);
+      g.gain.setValueAtTime(vol, Math.max(t0 + 0.4, t0 + dur - 0.5));
+      g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(filtro); filtro.connect(g);
+      if (c.createStereoPanner) {
+        const p = c.createStereoPanner();
+        p.pan.setValueAtTime(-1, t0); p.pan.linearRampToValueAtTime(1, t0 + dur);
+        g.connect(p); p.connect(mestre);
+      } else g.connect(mestre);
+      osc.start(t0); osc.stop(t0 + dur + 0.05);
+      return {
+        parar: function () {
+          try { const t = c.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0.0001, t + 0.1); osc.stop(t + 0.15); } catch (e) { /* já parou */ }
+        }
+      };
+    } catch (e) { return nada; }
   }
 
   function duracao(nome) { return (DURACAO[nome] || 0.35) * 1000; }
@@ -107,7 +172,7 @@ const Sons = (function () {
   // Destrava o áudio no primeiro toque ou tecla (exigência dos navegadores).
   function destravar() { if (Config.somLigado()) contexto(); }
 
-  return { tocar: tocar, duracao: duracao, destravar: destravar, existe: function (n) { return !!CATALOGO[n]; } };
+  return { tocar: tocar, passar: passar, duracao: duracao, destravar: destravar, existe: function (n) { return !!CATALOGO[n]; } };
 })();
 
 
@@ -133,6 +198,7 @@ const Voz = (function () {
   }
 
   function esperar(ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); }
+  const VELOCIDADES = { normal: 1, rapida: 1.3, maisRapida: 1.6 };
 
   // Fala um texto e espera terminar (com um limite de tempo, por segurança).
   function dizer(texto, id, forcar) {
@@ -142,7 +208,8 @@ const Voz = (function () {
       const u = new SpeechSynthesisUtterance(texto);
       u.lang = "pt-BR";
       if (vozPt) u.voice = vozPt;
-      u.rate = Config.get("modoCalmo") ? 0.9 : 0.95;
+      // No Modo Áudio, a velocidade é escolhida na Área do professor; fora dele, fica como sempre foi.
+      u.rate = Config.get("modoAudio") ? (VELOCIDADES[Config.get("velocidadeVoz")] || 1) : (Config.get("modoCalmo") ? 0.9 : 0.95);
       let feito = false;
       function fim() { if (!feito) { feito = true; ok(); } }
       u.onstart = function () { jaFalou = true; };
@@ -180,7 +247,7 @@ const Voz = (function () {
       for (const p of passos) {
         if (id !== fila) return;
         if (p.som) {
-          if (p.som !== "nada") Sons.tocar(p.som, p.arg);
+          if (p.som !== "nada") Sons.tocar(p.som, p.arg, p.pan);
           if (typeof p.aoTocar === "function") p.aoTocar();
           await esperar(p.pausa !== undefined ? p.pausa : Sons.duracao(p.som) + 120);
         }
@@ -196,10 +263,10 @@ const Voz = (function () {
   }
 
   // Fala do foco (só no Modo Áudio, só pela voz própria do jogo).
-  function falarFoco(texto, som) {
-    if (!Config.get("modoAudio")) { if (som) Sons.tocar(som); return; }
+  function falarFoco(texto, som, arg, pan) {
+    if (!Config.get("modoAudio")) { if (som) Sons.tocar(som, arg, pan); return; }
     ultima = texto;
-    sequencia(som ? [{ som: som, pausa: 300 }, { texto: texto }] : [{ texto: texto }], { anunciar: false });
+    sequencia(som ? [{ som: som, arg: arg, pan: pan, pausa: 300 }, { texto: texto }] : [{ texto: texto }], { anunciar: false });
   }
 
   function repetir() {
