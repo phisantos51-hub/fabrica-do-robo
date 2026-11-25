@@ -130,7 +130,7 @@ const Sons = (function () {
   };
 
   function tocar(nome, arg, pan) {
-    if (!Config.somLigado()) return;
+    if (!Config.efeitosLigados()) return;
     const f = CATALOGO[nome]; if (!f) return;
     panAtual = pan || 0;
     try { f(arg); } catch (e) { /* sem som neste computador */ }
@@ -140,7 +140,7 @@ const Sons = (function () {
   /* Esteira Rápida: um motor que "entra" pela esquerda e "sai" pela direita em durMs. */
   function passar(durMs) {
     const nada = { parar: function () {} };
-    if (!Config.somLigado()) return nada;
+    if (!Config.efeitosLigados()) return nada;
     const c = contexto(); if (!c) return nada;
     try {
       const t0 = c.currentTime, dur = durMs / 1000;

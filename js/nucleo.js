@@ -16,6 +16,7 @@ const Config = (function () {
     modoAudio: false,     // jogo todo pelo teclado, com fala e sons
     vozPropria: true,     // a voz do próprio jogo (desligue se usar NVDA ou Narrador)
     som: false,           // sons e voz fora do Modo Áudio (começa desligado)
+    efeitos: true,        // efeitos sonoros (sons das peças, de acerto, de erro...); a voz é separada
     modoCalmo: false,
     semAnimacoes: false,
     letrasGrandes: false,
@@ -49,6 +50,7 @@ const Config = (function () {
     set: function (k, v) { dados[k] = v; Guardar.gravar(CHAVE, dados); aplicar(); },
     somLigado: somLigado,
     vozLigada: function () { return dados.vozPropria && somLigado(); },
+    efeitosLigados: function () { return dados.efeitos !== false && somLigado(); },
     aplicar: aplicar,
     aoMudar: function (f) { ouvintes.push(f); }
   };
@@ -449,7 +451,8 @@ function abrirPausa() {
    ========================================================================= */
 const OPCOES_AJUSTES = [
   { k: "modoAudio", nome: "Modo Áudio (tecla F1)", info: "O jogo fala e funciona só pelo teclado." },
-  { k: "vozPropria", nome: "Voz do próprio jogo", info: "Desligue se o estudante usa NVDA ou Narrador, para não ouvir duas vozes." },
+  { k: "vozPropria", nome: "Voz do jogo", info: "As falas do jogo, inclusive o aviso da abertura. Desligue também se o estudante usa NVDA ou Narrador." },
+  { k: "efeitos", nome: "Efeitos sonoros", info: "Sons das peças, de acerto e de erro. Não muda a voz. No Modo Áudio, os sons fazem parte das atividades." },
   { k: "som", nome: "Sons e voz fora do Modo Áudio", info: "Começa desligado. Use fones de ouvido." },
   { k: "modoCalmo", nome: "Modo Calmo", info: "Tela mais limpa, cores suaves, frases diretas e sons suaves." },
   { k: "semAnimacoes", nome: "Desligar animações", info: "Nada se mexe na tela." },
